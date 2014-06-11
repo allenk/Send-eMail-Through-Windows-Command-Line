@@ -1,4 +1,4 @@
-Command Line Emailing using Windows CDO.Message
+﻿Command Line Emailing using Windows CDO.Message
 
 This will allow developers \ coders \ whoever, to send basic email using a shell \ shellexecute \ batch file.
 You may also use this to send attachments, html pages, etc although it will require some additional coding 
@@ -15,10 +15,10 @@ To use this, start your Visual Studio IDE and load the .vbp file \ emailFromComm
 If the mail account you wish to use to send the mail is not Gmail, make sure you change settings and credentials on the function.
 Compile to .exe
 
-Shell from vb \ from a command line using this syntax for your Gmail account (use your own credentials to test this if you want): (without the '<', '>')
-<File Path> user=<username> pass=<password> mail=Sendto@mail.com from=Sentfrom@mail.com subj=Subject body=This-Is-The-Body-of-the-letter (dont use spaces, you may type %20 instead of a space, and <br> instead of new line)
+'Shell from vb \ from a command line using this syntax for your Gmail account (use your own credentials to test this if you want):
+'<File Path> user=USERNAME pass=PASSWORD mail=Sendto@mail.com from=Sentfrom@mail.com subj=Subject body=This Is The Body of the letter
 
-Example:
-C:\cmdMail.exe user=myGmailUsername pass=myGmailPassword mail=stavmann2@gmail.com from=mail@mail.com subj=Hello-This-Is-A-Subject body=This%20Is%20The%20Mail%20Body.<BR><BR>Good-Bye.
+'P.S HTML tags work flawlessly here, so if you wish to make a new line of text, just type in a <BR> tag.
 
-
+'Example:
+'C:\cmdMail.exe user=myGmailUsername pass=myGmailPassword mail=stavmann2@gmail.com from=mail@mail.com subj=Hello This-Is A Subject body=This Is The Mail Body.<BR><BR>Good-Bye :)

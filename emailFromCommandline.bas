@@ -6,66 +6,41 @@ Attribute VB_Name = "cmdMailModule"
 'Usage:
 'Important: You can not just run this through the Visual Basic IDE, you must compile and use the Command-Line to pass parameters !
 
-'To use this, start your Visual Studio IDE and load the .prj file \ emailFromCommandline.bas file
+'To use this, start your Visual Studio IDE and load the .vbp file \ emailFromCommandline.bas file
 'If the mail account you wish to use to send the mail is not Gmail, make sure you change settings and credentials on the function.
 'Compile to .exe
 '
-'Shell from vb \ from a command line using this syntax for your Gmail account (use your own credentials to test this if you want): (without the '<', '>')
-'<File Path> user=<username> pass=<password> mail=Sendto@mail.com from=Sentfrom@mail.com subj=Subject body=This-Is-The-Body-of-the-letter (dont use spaces, you may type %20 instead of a space, and <br> instead of new line)
+'Shell from vb \ from a command line using this syntax for your Gmail account (use your own credentials to test this if you want):
+'<File Path> user=USERNAME pass=PASSWORD mail=Sendto@mail.com from=Sentfrom@mail.com subj=Subject body=This Is The Body of the letter
+
+'P.S HTML tags work flawlessly here, so if you wish to make a new line of text, just type in a <BR> tag.
 
 'Example:
-'C:\cmdMail.exe user=myGmailUsername pass=myGmailPassword mail=stavmann2@gmail.com from=mail@mail.com subj=Hello-This-Is-A-Subject body=This%20Is%20The%20Mail%20Body.<BR><BR>Good-Bye.
+'C:\cmdMail.exe user=myGmailUsername pass=myGmailPassword mail=stavmann2@gmail.com from=mail@mail.com subj=Hello This-Is A Subject body=This Is The Mail Body.<BR><BR>Good-Bye :)
 
 
 Option Explicit
 
-Dim msgA As Object 'declare the CDO
+Private Const cmdUSER As String = "user="       'SMTP Username
+Private Const cmdPASS As String = "pass="       'SMTP Password
+Private Const cmdMAIL As String = "mail="       'Targeted eMail address (Must have legit email address template (mail@domain.com) )
+Private Const cmdFROM As String = "from="       '"Replay To" address    (Must have legit email address template (mail@domain.com) )
+Private Const cmdSUBJ As String = "subj="       'eMail Subject
+Private Const cmdBODY As String = "body="       'eMail Body
+Private Const cmdEND  As String = "=END="       'eMail Body
 
 Public Sub Main()
 
-'It's important to declare each variable as its type otherwise, it gets declared as Variant by default.
-Dim tempStr As String, xUsername As String, xPassword As String, xMailTo As String, xFrom As String, xSubject As String, xMainText As String
+'The idea is to simply grab the parameters, and split them to text strings, and then implement them straight to the mailing function.
+'if went well, Msgbox (Mail Sent), Else Msgbox Error (written in the mailing function itself)
 
-'Declare the .exe parameters and split them using spaces.
-Dim Parameters() As String
-    Parameters() = Split(Command, " ")
-    
-'For each parameter splited
-Dim i As Integer
-    For i = 0 To UBound(Parameters)
-        
-        'read the first 5 characters of every parameter to figure out which parameter is it
-        tempStr = Right(Parameters(i), (Len(Parameters(i)) - 5))
-        
-        'spread parameters to variables
-        Select Case (Left(Parameters(i), 5))
-        
-            Case ("user="):
-                xUsername = tempStr
-            Case ("pass="):
-                xPassword = tempStr
-            Case ("mail="):
-                xMailTo = tempStr
-            Case ("subj="):
-                xSubject = tempStr
-            Case ("body="):
-                xMainText = tempStr
-            Case ("from="):
-                xFrom = tempStr
-            Case Else
-                 
-        End Select
-        
-    Next i
-
-'if all went well, msgbox (Mail Sent), else msgbox Error (written in the function itself)
-If mailSend(xUsername, _
-             xPassword, _
-             xMailTo, _
-             xFrom, _
-             xSubject, _
-             xMainText _
-             ) = 0 Then Call MsgBox("Mail Sent!", vbInformation)
+If mailSend(Trim(GetBetween(cmdUSER, cmdPASS)), _
+            Trim(GetBetween(cmdPASS, cmdMAIL)), _
+            Trim(GetBetween(cmdMAIL, cmdFROM)), _
+            GetBetween(cmdFROM, cmdSUBJ), _
+            GetBetween(cmdSUBJ, cmdBODY), _
+            GetBetween(cmdBODY, cmdEND) _
+            ) = 0 Then Call MsgBox("Mail Sent!", vbInformation)
        
 End Sub
 
@@ -73,7 +48,8 @@ End Sub
 
 Private Function mailSend(xUsername, xPassword, xMailTo, xFrom, xSubject, xMainText) As Integer
 
-Set msgA = CreateObject("CDO.Message") 'set the CDO to reffer as.
+Dim msgA As Object 'declare the CDO
+Set msgA = CreateObject("CDO.Message") 'set the CDO to reffer as CDO.Message (microsoft default object that can be found on almost all windows versions since vista by default)
     
     msgA.To = xMailTo 'get targeted mail from command
     msgA.Subject = xSubject 'get subject from command
@@ -122,3 +98,30 @@ Set msgA = CreateObject("CDO.Message") 'set the CDO to reffer as.
         If Err.Number <> 0 Then Call MsgBox("Mail delivery failed: " & Err.Description, vbExclamation)
  
 End Function
+
+
+Private Function GetBetween(strOne As String, strTwo As String) As String
+
+'Grab parameters as a whole, and place the line of text on strBody, in addition to the END-OF-PARAMETERS Flag called cmdEnd.
+Dim strBody As String
+    strBody = Command$ & cmdEND
+
+'Locate each word's location within strBody, if its not found, don't continue.
+Dim lngLocationOne As Long
+Dim lngLocationTwo As Long
+    
+lngLocationOne = InStr(1, strBody, strOne, vbTextCompare)
+    If (lngLocationOne = 0) Then GoTo ErrHandle
+    
+lngLocationTwo = InStr(1, strBody, strTwo, vbTextCompare)
+    If (lngLocationTwo = 0) Then GoTo ErrHandle
+
+'Grab a parameter value and return it.
+GetBetween = Mid(strBody, lngLocationOne + Len(strOne), (lngLocationTwo - lngLocationOne - Len(strOne)))
+        
+Exit Function
+ErrHandle:
+    GetBetween = vbNullString
+
+End Function
+
